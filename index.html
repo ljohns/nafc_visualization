@@ -155,11 +155,11 @@ function toggleClinics() {
     .attr("cy", 300)
     .attr("r", 1)
     .attr("fill", "purple")
-    .attr("opacity", 1);
+    .attr("opacity", 0.8);
 
   svg.selectAll("circle")
     .transition()
-    .delay(function (d, i) { return i * 100; })
+    .delay(function (d, i) { return i * 75; })
     .duration(1000)
     .ease(d3.easeQuad)
     .attr("cx", function(d, i) { return d.x; })
@@ -167,7 +167,7 @@ function toggleClinics() {
     .attr("r", 4)
 
   svg.selectAll("g")
-    .attr("opacity", 0.8)
+    .attr("opacity", 1.0)
     .transition()
     .duration(500)
     .ease(d3.easeLinear)
@@ -184,7 +184,7 @@ function toggleUninsured() {
     .transition()
     .duration(500)
     .ease(d3.easeLinear)
-    .attr("opacity", 0.8)
+    .attr("opacity", 1.0)
 
 
   svg.selectAll("circle")
