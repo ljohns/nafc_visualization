@@ -3,11 +3,8 @@
     display: block; /* show by default */ /* change back to block */
     position: fixed; /* Stay in place */
     z-index: 1; /* Sit on top */
-    max-height: calc(100% - 100px);
-    position: fixed;
-        top: 50%;
-        left: 50%;
-    transform: translate(-50%, -50%);
+    left: 0;
+    top: 0;
     width: 100%; /* Full width */
     height: 100%; /* Full height */
     overflow: auto; /* Enable scroll if needed */
