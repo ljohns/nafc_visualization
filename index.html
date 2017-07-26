@@ -56,7 +56,8 @@ div.tooltip {
   color: white;
   border: 0px;      
   border-radius: 8px;           
-  pointer-events: none;         
+  pointer-events: none;;
+  white-space: pre-wrap;       
 }
 
 html, body {
@@ -91,9 +92,19 @@ body {
     </div>
 
     <section class="border", style="text-align:center;">
-        <button>Percent Uninsured</button>
-        <button>Clinics</button>
+        <button onclick="toggleUninsured();">Percent Uninsured</button>
+        <button onclick="toggleClinics();">Clinics</button>
     </section>
+
+  </div>
+
+  <svg width="960" height="600" display: block; margin: 0 auto;></svg>
+
+  <div>
+
+    <p></p>
+    <p></p>
+    <center> <img src="logos.jpg" alt="Mountain View" align="middle"> </center> 
 
   </div>
 
@@ -101,12 +112,87 @@ body {
 
 
 
-<svg width="960" height="600" display: block; margin: 0 auto;></svg>
 
 <script src="https://d3js.org/d3.v4.min.js"></script>
 <script src="https://d3js.org/d3-scale-chromatic.v1.min.js"></script>
 <script src="https://d3js.org/topojson.v2.min.js"></script>
 <script>
+
+function toggleClinics() {
+
+  var circleInitialAttrs = {
+    "cx": 0,
+    "cy": 0,
+    "r": 20
+  };
+
+  var circleAttrs = {
+    "cx": function(d) { d.x; },
+    "cy": function(d) { d.y; },
+    "r": 20
+  };
+
+  var dataset = [
+    { x: 500, y: 110 },
+    { x: 800, y: 200 },
+    { x: 900, y: 180 },
+    { x: 200, y: 420 },
+    { x: 100, y: 300 },
+    { x: 150, y: 100 },
+    { x: 50, y: 250 },
+    { x: 905, y: 130 },
+    { x: 450, y: 450 },
+    { x: 400, y: 225 },
+    { x: 750, y: 250 },
+    { x: 775, y: 400 },
+  ];
+
+  var circles = svg.selectAll("circle")
+    .data(dataset)
+    .enter()
+    .append("circle")
+    .attr("cx", 480)
+    .attr("cy", 300)
+    .attr("r", 1)
+    .attr("fill", "purple")
+    .attr("opacity", 1);
+
+  svg.selectAll("circle")
+    .transition()
+    .delay(function (d, i) { return i * 100; })
+    .duration(1000)
+    .ease(d3.easeQuad)
+    .attr("cx", function(d, i) { return d.x; })
+    .attr("cy", function(d, i) { return d.y; })
+    .attr("r", 4)
+
+  svg.selectAll("g")
+    .attr("opacity", 0.8)
+    .transition()
+    .duration(500)
+    .ease(d3.easeLinear)
+    .attr("opacity", 0.4)
+}
+
+function toggleUninsured() {
+  svg.selectAll("circle")
+    .transition()
+    .duration(500)
+    .attr("opacity", 0);
+
+  svg.selectAll("g")
+    .transition()
+    .duration(500)
+    .ease(d3.easeLinear)
+    .attr("opacity", 0.8)
+
+
+  svg.selectAll("circle")
+    .transition()
+    .delay(500)
+    .remove();
+
+}
 
 var centered;
 
@@ -168,23 +254,25 @@ g.call(d3.axisBottom(x)
     .remove();
 
 d3.queue()
-    .defer(d3.json, "https://d3js.org/us-10m.v1.json")
-    .defer(d3.tsv, "data_2015.tsv", function(d) { data_2015.set(d.id, +d.rate); })
-    .await(ready);
+  .defer(d3.json, "https://d3js.org/us-10m.v1.json")
+  .defer(d3.tsv, "data_2015.tsv")
+  .await(ready);
 
+function ready(error, us, data) {
+   var rate = {};
 
-function ready(error, us) {
-  if (error) throw error;
+   data.forEach(function(d) {
+    rate[d.id] = +d.rate;
+  });
 
   svg.append("g")
-      .attr("class", "counties")
+    .attr("class", "counties")
     .selectAll("path")
     .data(topojson.feature(us, us.objects.counties).features)
     .enter().append("path")
-      .attr("fill", function(d) { return color(d.rate = data_2015.get(d.id)); })
-      .attr("d", path);
-    //.append("title")
-     // .text(function(d) { return d.rate + "%"; });
+    .attr("d", path)
+    .style("fill", function(d) { return color(rate[d.id]); })
+    .style("opacity", 0.8);
 
   svg.append("path")
       .datum(topojson.mesh(us, us.objects.states, function(a, b) { return a !== b; }))
@@ -197,18 +285,14 @@ function ready(error, us) {
             div.transition()        
                 .duration(200)      
                 .style("opacity", .7);      
-                div.text(data_2015.get(d.id))
+                div.text(" " + d.id + " " + rate[d.id] + "%")
                     .style("left", (d3.event.pageX) + "px")     
                     .style("top", (d3.event.pageY - 40) + "px");
             d3.select(this)
                 .style("fill", "#509e2f");
-                //.style("stroke-linejoin", "round")
-                //.style("stroke-width", 3)
-                //.style("stroke", "grey");
         }
     })   
-
-      // fade out tooltip on mouse out               
+          
     .on("mouseout", function(d) {
         if (d3.select(this).attr("class") != "states") {
             div.transition()        
@@ -219,11 +303,11 @@ function ready(error, us) {
                 .duration(250)
                 .style("stroke", "none")
                 .style("opacity", 1.0)
-                .style("fill", function(d) { return color(d.rate = data_2015.get(d.id)); })
+                .style("fill", function(d) { return color(rate[d.id]); })
         } 
     })
-      .on("click", clicked);
-}
+    //  .on("click", clicked);
+  }
 
 function clicked(d) {
   var x, y, k;
@@ -249,6 +333,6 @@ function clicked(d) {
       .duration(750)
       .attr("transform", "translate(" + width / 2 + "," + height / 2 + ")scale(" + k + ")translate(" + -x + "," + -y + ")")
       .style("stroke-width", 1.5 / k + "px");
-}
+  }
 
 </script>
